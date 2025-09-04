@@ -3,7 +3,10 @@ title: "Data visializations using R: Homework"
 subtitle: "HEV9009 Scientific Communication, Collaboration and Design in Quantitative Research Using R"
 format:
   typst:
-    columns: 2
+    margin:
+      left: 5cm
+      right: 5cm
+      y: 3cm
 ---
 Your homework should result in multiple versions of a standalone graphic in PDF format. The size of the graphic should be adjusted to a suitable format.[^format] Create at least three versions of the same using the same underlying data, using different design choices. The various design choices should be carefully considered and support the interpretation of the graphics. The distinct design choices could include organization of the underlying data, different facets, manipulation of axes, annotations, color schemes, titles, scales, etc.
 Be sure to include a caption in the figure file to make it completely standalone.

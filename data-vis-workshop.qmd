@@ -1,0 +1,282 @@
+---
+title: "Data visualization workshop - HEV9009"
+date: 2025-09-04
+format: html
+editor_options: 
+  chunk_output_type: console
+---
+
+
+
+
+## `ggplot` basics using real data 
+
+
+```{r}
+#| label: getting-the-data
+
+# You might need to install exscidata from github
+# to get the updated version with relevant data 
+# Un-comment the code below.
+# remotes::install_github("dhammarstrom/exscidata")
+
+
+# Load exscidata/tidyverse
+library(exscidata)
+library(tidyverse)
+
+# Store the data in an object
+d <- exscidata::millward
+
+
+# Our first basic plot
+# We use defaults except where we increase point size in 
+# geom point
+d |> 
+ ggplot(aes(x = RNA, y = protein_synthesis)) + 
+  geom_point(size = 4)
+  
+
+# We can add aesthetic mappings, e.g. using group to color and 
+# shape
+d |> 
+ ggplot(aes(x = RNA, y = protein_synthesis, 
+            color = group, 
+            shape = group)) + 
+  geom_point(size = 4)
+
+
+
+
+```
+
+
+
+## More geoms, scales, and facets
+
+Geoms allow for different display of data, one-dimensional and two dimensional displays are obvious usage of the x- and y-axis. Most geoms are also affected by color/fill/alpha, and some geoms have more specific aesthetics (line type, shape).
+
+Some geoms are performing statistical transformations, like one-dimensional displays:
+
+```{r}
+
+## Examples of one-dimensional displays
+d |> 
+  ggplot(aes(x = RNA)) + geom_density()
+
+d |> 
+  ggplot(aes(x = RNA)) + geom_histogram()
+
+
+
+
+```
+
+
+Two dimensional displays can be used to combine geoms, we can also modify colors and other scales using special functions. 
+
+```{r}
+# We added set.seed to control the randomness of jittering
+set.seed(1)
+
+
+
+d |> 
+  ggplot(aes(group, protein_synthesis, 
+             shape = group,
+             fill = group,
+             alpha = group,
+             color = group)) + 
+  
+  geom_boxplot(width = 0.3) +
+  
+  geom_point(position = position_jitter(width = 0.1)) +
+  
+  scale_color_manual(values = c("orchid", "green")) +
+  scale_y_continuous(limits = c(0, 0.25), 
+                     expand = c(0,0)) +
+  scale_alpha_manual(values = c(0.2, 0.8)) +
+  scale_fill_manual(values = c("darkblue", "orange")) +
+  scale_x_discrete(label = c("Some other", "label"))
+```
+
+
+Facets can be used to create small multiples, relevant variations are `facet_wrap`and `facet_grid`.
+
+```{r}
+
+
+d |> 
+  ggplot(aes(RNA, protein_synthesis)) + 
+  geom_point() +
+  facet_wrap( ~ group, ncol = 1)
+
+
+
+```
+
+
+## Title, labels, and annotations
+
+Modifying non-data elements like labels and theme components allows us to add information not contained in the data to the plot. 
+
+Below we use the `ggtext` package to control text elements using markdown.
+
+A color scale can be developed using variuos tools like [colorbrewer](https://colorbrewer2.org) or  [colorpicker](https://colorpicker.fr/) (there are many such tools!).
+
+```{r}
+
+# A note on the specific units for our measurements
+# RNA ug mg-1
+# protein synth Ks day-1
+
+
+# Using the ggtext package
+library(ggtext)
+
+# A color scale from color brewer, saved in a vector, used below
+colscale <- c("#a6611a","#dfc27d","#f5f5f5","#80cdc1","#018571")
+
+
+
+p1 <- d |> 
+  ggplot(aes(RNA, protein_synthesis, fill = group)) +
+  
+  geom_point(size = 4, shape = 21) +
+  
+  labs(x = "RNA content (&mu;g mg<sup>-1</sup>)", 
+      y = "Protein synthesis (k<sub>s</sub> day<sup>-1</sup>)", 
+      title = "Protein synthesis in mice fed different diets", 
+      subtitle = '<span style="color:#a6611a">Protein fed</span> and <span style="color:#018571">protein starved</span>', 
+      caption = "Data from Millward (1973)") +
+  
+  theme_classic() +
+  
+  annotate("text", 
+           x = 5.6, 
+           y = 0.15, 
+             color = colscale[1],
+           label = "Group A") +
+  
+    annotate("curve", 
+           x = 6.6, 
+           xend = 8.4,
+           y = 0.148, 
+           yend = 0.12, 
+           arrow = arrow(type = "closed", length = unit(0.4, "cm")),
+           color = colscale[1],
+           curvature = -0.2) +
+
+    annotate("text", 
+           x = 13.5, 
+           y = 0.05, 
+                color = colscale[5],
+           label = "Group B") +
+  
+    annotate("curve", 
+           x = 12.5, 
+           xend = 11,
+           y = 0.05, 
+           yend = 0.08, 
+                color = colscale[5],
+           arrow = arrow(type = "closed", length = unit(0.4, "cm")),
+           curvature = -0.2) +
+   
+   scale_fill_manual(values = c(colscale[1], colscale[5])) +
+  
+  scale_x_continuous(limits = c(0, 15), 
+                     expand = c(0,0)) +
+  scale_y_continuous(limits = c(0, 0.25), 
+                     expand = c(0,0)) +
+  
+  theme(axis.title = element_markdown(),
+        axis.text.x = element_text(size = 12, 
+                                   hjust = c(0.5, 0.5, 0.5, 1)),
+        axis.text.y = element_text(size = 12, 
+                                   vjust = c(0.5, 0.5, 0.5, 0.5, 0.5, 0.8)),
+        plot.background = element_rect(fill = "gray95"),
+        legend.position = "none", 
+        plot.title = element_text(), 
+        plot.subtitle = element_markdown())  
+  
+
+
+p1
+
+```
+
+
+## Saving figures
+
+Using `ggsave`, we can save figures in multiple formats, e.g., PDF. Make sure to specify dimensions.
+
+```{r}
+
+ggsave("figure1.pdf", p1, width = 15, height = 12,
+       units = "cm")
+
+
+```
+
+
+
+
+## Colors and wrapping up
+
+Fonts can be loaded into R using the extrafont package. Together with custom color schemes this can change the feel of the plot.
+
+
+```{r}
+
+library(extrafont)
+# font_import() # needed to load available fonts
+loadfonts(device = "win")
+
+# A color scheme stolen from Peppa the pig
+peppa <- c("#6C61A6",
+           "#6FB3B6", 
+           "#87B9F6",
+           "#007CC3",
+           "#77C76E",
+           "#327B47",
+           "#A68979",
+           "#8D7C68",
+           "#FFB0DF",
+           "#FE8ACE",
+           "#FE9A34") 
+
+
+
+
+d |> 
+  ggplot(aes(RNA, protein_synthesis, fill = group)) + 
+  
+  geom_point(shape = 21, size = 6) + 
+  labs(x = "RNA", 
+       y = "Protein synthesis", 
+       fill = "Group") +
+  
+  scale_fill_manual(values = peppa[c(1, 9)]) +
+  
+  
+  theme(axis.line = element_line(color = peppa[9]), 
+        axis.ticks = element_line(color = peppa[9]),
+        axis.text = element_text(color = peppa[9], size = 15, family="Comic Sans MS"), 
+        axis.title = element_text(color = peppa[9], size = 15, family="Comic Sans MS"), 
+        legend.title = element_text(color = peppa[1], size = 15, family="Comic Sans MS"),
+        plot.background = element_rect(fill = peppa[4]), 
+        panel.background = element_rect(fill = peppa[3]), 
+        legend.background = element_rect(fill = peppa[5]),
+        panel.grid = element_blank())
+
+
+```
+
+
+
+
+
+
+
+
+
