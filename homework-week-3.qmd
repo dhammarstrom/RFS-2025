@@ -1,0 +1,17 @@
+---
+title: "Data packages: Homework"
+subtitle: "HEV9009 Scientific Communication, Collaboration and Design in Quantitative Research Using R"
+format:
+  typst:
+    margin:
+      left: 5cm
+      right: 5cm
+      y: 3cm
+---
+
+The goal of this homework is to set up an R data package. The package should contain data, potentially the data you used to create a figure, or data that was part of the reproducible report. The data set should be documented (available as a help file in R). The course notes have been updated with a tutorial-style description on how to get started.
+
+It is not necessary to incorporate tests in your package. Nor is it required that the package is documented beyond `data.R`. However, you may want to explore the capabilities of `testthat` and `packagedown`.
+
+The package should be used in a report or a repository used for data analysis. Do not use the data package repository for the report/analysis. 
+
